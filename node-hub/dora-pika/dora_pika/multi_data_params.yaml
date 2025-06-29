@@ -1,0 +1,66 @@
+dataInfo:
+
+  camera:
+    color:
+      names: ['pikaDepthCamera_l', 'pikaDepthCamera_r', 'pikaFisheyeCamera_l', 'pikaFisheyeCamera_r', 'camera_realsense_c']
+      parentFrames: ['camera_l_link', 'camera_r_link', 'camera_fisheye_l_link', 'camera_fisheye_r_link', 'camera_realsense']
+      topics: ['/camera_l/color/image_raw', '/camera_r/color/image_raw', '/camera_fisheye_l/color/image_raw', '/camera_fisheye_r/color/image_raw', '/camera_realsense/color/image_raw']
+      configTopics: ['/camera_l/color/camera_info', '/camera_r/color/camera_info', '/camera_fisheye_l/color/camera_info', '/camera_fisheye_r/color/camera_info','/camera_realsense/color/camera_info']
+    depth:
+      names: ['pikaDepthCamera_l', 'pikaDepthCamera_r', 'pikaDepthCamera_c']
+      parentFrames: ['camera_l_link', 'camera_r_link', 'camera_realsense']
+      topics: ['/camera_l/aligned_depth_to_color/image_raw', '/camera_r/aligned_depth_to_color/image_raw', '/camera_realsense/aligned_depth_to_color/image_raw']
+      configTopics: ['/camera_l/aligned_depth_to_color/camera_info', '/camera_r/aligned_depth_to_color/camera_info', '/camera_realsense/aligned_depth_to_color/camera_info']
+
+    pointCloud:
+      names: []
+      parentFrames: []
+      topics: []
+      configTopics: []
+      maxDistances: []
+      downSizes: []
+
+  arm:
+    jointState:
+      names: []
+      topics: []
+    endPose:
+      names: []
+      topics: []
+
+  localization:
+    pose:
+      names: ['pika_l', 'pika_r']
+      topics: ['/pika_pose_l', '/pika_pose_r']
+
+  gripper:
+    encoder:
+      names: ['pika_l', 'pika_r']
+      topics: ['/gripper_l/data', '/gripper_r/data']
+
+  imu:
+    9axis:
+      names: ['pika_l', 'pika_r']
+      topics: ['/imu_l/data', '/imu_r/data']
+
+  lidar:
+    pointCloud:
+      names: []
+      topics: []
+      xDistanceUppers: []
+      xDistanceLowers: []
+      yDistanceUppers: []
+      yDistanceLowers: []
+      zDistanceUppers: []
+      zDistanceLowers: []
+      downSizes: []
+
+  robotBase:
+    vel:
+      names: []
+      topics: []
+  
+  tf:
+    transform:
+      parentFrames: []
+      childFrames: []

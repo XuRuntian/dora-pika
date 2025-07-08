@@ -1,0 +1,31 @@
+nodes:
+- id: dora-fisheye-camera-left
+  build: pip install -e .
+  path: src/dora_fisheye_camera/main.py
+  inputs:
+    tick: dora/timer/millis/33
+  env:
+    CAMERA_ID: /dev/video2
+    IMAGE_HEIGHT: 480
+    IMAGE_WIDTH: 640
+    ENCODING: rgb8
+  outputs:
+  - image
+- id: dora-fisheye-camera-right
+  build: pip install -e .
+  path: src/dora_fisheye_camera/main.py
+  inputs:
+    tick: dora/timer/millis/31
+  env:
+    CAMERA_ID: /dev/video2
+    IMAGE_HEIGHT: 480
+    IMAGE_WIDTH: 640
+    ENCODING: rgb8
+  outputs:
+  - image
+- id: dora-fisheye-camera-example
+  build: pip install -e .
+  path: examples/dora_fisheye_camera_example.py
+  inputs:
+    image_left: dora-fisheye-camera-left/image
+    image_right: dora-fisheye-camera-right/image

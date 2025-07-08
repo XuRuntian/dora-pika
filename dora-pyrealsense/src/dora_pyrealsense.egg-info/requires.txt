@@ -1,0 +1,24 @@
+dora-rs
+dora-rs-cli
+dora-rs>=0.3.9
+numpy<2.0.0
+opencv-python>=4.1.1
+
+[:sys_platform == "darwin"]
+pyrealsense2-macosx>=2.54.2
+
+[:sys_platform == "linux"]
+pyrealsense2>=2.54.2.5684
+
+[:sys_platform == "windows"]
+pyrealsense2==2.55.1.6486
+
+[dev]
+ruff
+pre-commit
+
+[docs]
+sphinx
+
+[test]
+pytest

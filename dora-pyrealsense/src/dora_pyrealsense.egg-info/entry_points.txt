@@ -1,0 +1,2 @@
+[console_scripts]
+dora-pyrealsense = dora_pyrealsense.main:main

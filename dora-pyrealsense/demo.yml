@@ -1,0 +1,35 @@
+nodes:
+- id: dora-pyrealsense-left
+  build: pip install -e .
+  path: src/dora_pyrealsense/main.py
+  inputs:
+    tick: dora/timer/millis/33
+  outputs:
+  - image
+  - depth
+  env:
+    DEVICE_SERIAL: '230322272660'
+    IMAGE_HEIGHT: 480
+    IMAGE_WIDTH: 640
+    ENCODING: bgr8
+- id: dora-pyrealsense-right
+  build: pip install -e .
+  path: src/dora_pyrealsense/main.py
+  inputs:
+    tick: dora/timer/millis/31
+  outputs:
+  - image
+  - depth
+  env:
+    DEVICE_SERIAL: '230322272387'
+    IMAGE_HEIGHT: 480
+    IMAGE_WIDTH: 640
+    ENCODING: bgr8
+- id: dora-pyrealsense-example
+  build: pip install -e .
+  path: examples/dora_pyrealsense_example.py
+  inputs:
+    image_left: dora-pyrealsense-left/image
+    depth_left: dora-pyrealsense-left/depth
+    image_right: dora-pyrealsense-right/image
+    depth_right: dora-pyrealsense-right/depth

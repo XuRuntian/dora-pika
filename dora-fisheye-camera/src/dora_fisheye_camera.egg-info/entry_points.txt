@@ -1,0 +1,2 @@
+[console_scripts]
+dora-fisheye-camera = dora_fisheye_camera.main:main

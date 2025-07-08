@@ -1,0 +1,18 @@
+nodes:
+  - id: dora-vive
+    build: pip install -e .
+    path: src/dora_vive/main.py
+    inputs:
+      tick: dora/timer/millis/10
+    outputs:
+      - imu
+      - pose
+
+  - id: dora-vive-example 
+    build: pip install -e .
+    path: examples/dora_vive_example.py
+    inputs:
+      imu: dora-vive/imu
+      pose: dora-vive/pose
+    outputs:
+

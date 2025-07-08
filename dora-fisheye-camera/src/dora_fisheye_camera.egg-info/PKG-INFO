@@ -1,0 +1,61 @@
+Metadata-Version: 2.4
+Name: dora-fisheye-camera
+Version: 0.3.12
+Summary: Dora Node for capturing video with fisheye camera
+Author-email: Xu Runtian <xuruntian03@163.com>
+License-Expression: MIT
+Requires-Python: >=3.8
+Description-Content-Type: text/markdown
+Requires-Dist: dora-rs
+Requires-Dist: dora-rs-cli
+Requires-Dist: dora-rs>=0.3.9
+Requires-Dist: numpy<2.0.0
+Requires-Dist: opencv-python>=4.1.1
+Provides-Extra: dev
+Requires-Dist: ruff; extra == "dev"
+Requires-Dist: pre-commit; extra == "dev"
+Provides-Extra: test
+Requires-Dist: pytest; extra == "test"
+Provides-Extra: docs
+Requires-Dist: sphinx; extra == "docs"
+
+# dora-fisheye-camera
+
+## Getting started
+
+- Install it with uv:
+
+```bash
+uv venv -p 3.11 --seed
+uv pip install -e .
+```
+
+## Contribution Guide
+
+- Format with [ruff](https://docs.astral.sh/ruff/):
+
+```bash
+uv pip install ruff
+uv run ruff check . --fix
+```
+
+- Lint with ruff:
+
+```bash
+uv run ruff check .
+```
+
+- Test with [pytest](https://github.com/pytest-dev/pytest)
+
+```bash
+uv pip install pytest
+uv run pytest . # Test
+```
+
+## YAML Specification
+
+## Examples
+
+## License
+
+dora-fisheye-camera's code are released under the MIT License

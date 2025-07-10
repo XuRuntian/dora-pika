@@ -7,12 +7,12 @@ nodes:
   env:
     IMAGE_WIDTH: 320
     IMAGE_HEIGHT: 240
-    DEVICE_INDEX: 1
+    DEVICE_INDEX: 11
   outputs:
-    - touch_sensor_data
+    - gelsight_data
 
 - id: dora-gelsight-examples
   build: pip install -e .
   path: examples/dora_gelsight_example.py
   inputs:
-    data: dora-gelsight/touch_sensor_data
+    data: dora-gelsight/gelsight_data

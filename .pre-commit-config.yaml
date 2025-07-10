@@ -11,4 +11,4 @@ repos:
     rev: v0.6.1
     hooks:
       - id: ruff
-        args: [--fix, "--exclude=utilities"]
+        args: [--fix, "--exclude=utilities", "--exclude=DM-Tac WM"]

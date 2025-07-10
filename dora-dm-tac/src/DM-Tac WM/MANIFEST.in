@@ -1,0 +1,2 @@
+# 包含 dmrobotics 及其子目录中的所有 .so 文件
+recursive-include dmrobotics *.so

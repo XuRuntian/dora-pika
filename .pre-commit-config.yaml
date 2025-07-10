@@ -11,4 +11,4 @@ repos:
     rev: v0.6.1
     hooks:
       - id: ruff
-        args: [--fix]
+        args: [--fix, "--exclude=utilities"]

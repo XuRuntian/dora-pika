@@ -1,0 +1,16 @@
+nodes:
+- id: dora-dm-tac
+  build: pip install -e .
+  path: src/dora_dm_tac/main.py
+  inputs:
+    tick: dora/timer/millis/33
+  outputs:
+    - touch_sensor_data
+  env:
+    DEVICE_SERIAL: '2501130170'
+
+- id: dora-dm-tac-example
+  build: pip install -e .
+  path: examples/dora_dm_tac_example.py
+  inputs:
+    touch_data: dora-dm-tac/touch_sensor_data

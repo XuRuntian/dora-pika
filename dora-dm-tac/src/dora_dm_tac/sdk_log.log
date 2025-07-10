@@ -1,0 +1,5 @@
+2025-07-06 16:30:54,942 - INFO - System is Linux
+2025-07-06 16:30:56,109 - INFO - Attempting to open device: 8, Camera serial number: 2501130170, connection successful
+2025-07-06 16:30:58,597 - INFO - Raw Measurement FPS is: 121.4
+2025-07-06 16:30:58,598 - INFO - Sensor reset!!!!!!!!!!!!!!!!!!
+2025-07-06 16:30:58,598 - INFO - SDK Version: 0.1.3

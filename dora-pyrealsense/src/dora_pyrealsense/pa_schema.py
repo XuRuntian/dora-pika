@@ -1,8 +1,8 @@
 import pyarrow as pa
 
-pa_vec3 = pa.list_(pa.float64(), 3) 
-pa_image = pa.list_(pa.uint8(), 480*640*3) 
-pa_depth = pa.list_(pa.uint16(), 480*640) 
+pa_vec3 = pa.list_(pa.float64(), 3)
+pa_image = pa.list_(pa.uint8(), 480*640*3)
+pa_depth = pa.list_(pa.uint16(), 480*640)
 
 # 定义 image_schema
 pa_image_fields = [

@@ -3,7 +3,7 @@
 import pytest
 
 
-def test_import_main():
+def test_import_main() -> None:
     """TODO: Add docstring."""
     from dora_pyrealsense.main import main
 

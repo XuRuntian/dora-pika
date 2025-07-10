@@ -1,16 +1,15 @@
 # """TODO: Add docstring."""
 import logging
-import sys
-import threading
-from dataclasses import dataclass, field
-
 import os
+import threading
 import time
+from dataclasses import dataclass, field
 
 import cv2
 import numpy as np
 import pyarrow as pa
 from dora import Node
+from typing_extensions import Self
 
 from dora_fisheye_camera.pa_schema import pa_image_schema as image_schema
 
@@ -28,7 +27,7 @@ class FisheyeImageData:
     timestamp: int = 0
     camera_id: str = ""
     def updata_data(
-        self,
+        self: Self,
         camera_id: str,
         frame: np.ndarray,
         width: int,
@@ -46,7 +45,7 @@ class FisheyeImageData:
             self.timestamp = timestamp
             self._has_data = True
 
-    def read_data(self) -> tuple[bool, np.ndarray, int, int, str, int]:
+    def read_data(self: Self) -> tuple[bool, np.ndarray, int, int, str, int]:
         """Read Fisheye Image data"""
         with self._lock:
             return (
@@ -78,7 +77,7 @@ def configure_fisheye_camera(
     except Exception as e:
         cap.release()
         raise ConnectionError(f"相机配置失败: {str(e)}")
-    
+
 def capture_fisheye_camera_data(
     image_data: FisheyeImageData,
     dora_stop_event: threading.Event,
@@ -86,7 +85,7 @@ def capture_fisheye_camera_data(
     camera_id: str,
     image_width: int,
     image_height: int,
-    flip: str, 
+    flip: str,
     encoding: str,
     ) -> None:
     """Capture and process fisheye camera data in a separate thread."""
@@ -100,7 +99,7 @@ def capture_fisheye_camera_data(
                 logger.warning("无法获取图像帧，继续尝试...")
                 time.sleep(0.1)
                 continue
-            
+
             # 应用图像翻转
             if flip == "VERTICAL":
                 frame = cv2.flip(frame, 0)
@@ -167,14 +166,14 @@ def send_data_through_dora(
                     node.send_output("image", image_batch)
 
                 time.sleep(0.01)
-                
+
             elif event["type"] == "STOP":
                 dora_stop_event.set()
                 break
     except Exception as e:
         logger.exception("Dora error: %s", e)
 
-def main()-> None: 
+def main()-> None:
     """Main entry point"""
     logging.basicConfig(level=logging.INFO)
     flip = os.getenv("FLIP", "")
@@ -190,19 +189,41 @@ def main()-> None:
     # Start threads
     fisheye_camera_thread = threading.Thread(
         target=capture_fisheye_camera_data,
-        args=(image_data,  dora_stop_event, fisheye_camera_close_event, 
+        args=(image_data,  dora_stop_event, fisheye_camera_close_event,
               camera_id, image_width, image_height, flip, encoding),
+        daemon=True,
+
     )
 
     dora_thread = threading.Thread(
         target=send_data_through_dora,
         args=(image_data, dora_stop_event, fisheye_camera_close_event),
+        daemon=True,
+
     )
 
     fisheye_camera_thread.start()
     dora_thread.start()
 
-    fisheye_camera_thread.join()
-    dora_thread.join()
+    # 主线程等待
+    try:
+        while not dora_stop_event.is_set():
+            time.sleep(0.1)
+    except KeyboardInterrupt:
+        # 备用处理（虽然信号处理已注册）
+        logger.info("KeyboardInterrupt received. Exiting...")
+        dora_stop_event.set()
+    # 等待线程结束
+    logger.info("Waiting for threads to finish...")
+    fisheye_camera_thread.join(timeout=2.0)  # 设置超时时间
+    dora_thread.join(timeout=2.0)
+
+    # 确认所有资源已释放
+    if fisheye_camera_thread.is_alive():
+        logger.warning("fisheye thread is still running after timeout.")
+    if dora_thread.is_alive():
+        logger.warning("Dora thread is still running after timeout.")
+
+    logger.info("Program exited gracefully.")
 if __name__ == "__main__":
     main()

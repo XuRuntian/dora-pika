@@ -13,6 +13,7 @@ from dataclasses import dataclass, field
 import pyarrow as pa
 import pysurvive
 from dora import Node
+from typing_extensions import Self
 
 from dora_vive.pa_schema import pa_imu_schema as imu_schema
 from dora_vive.pa_schema import pa_pose_schema as pose_schema
@@ -32,7 +33,7 @@ class IMUData:
     serial_number: str = ""
 
     def update_data(
-        self,
+        self: Self,
         serial_number: str,
         acc: list[float],
         gyro: list[float],
@@ -46,7 +47,7 @@ class IMUData:
             self.mag = mag
             self._has_data = True
 
-    def read_data(self) -> tuple[bool, str, list[float], list[float], list[float]]:
+    def read_data(self: Self) -> tuple[bool, str, list[float], list[float], list[float]]:
         """Read IMU data."""
         with self._lock:
             return (
@@ -69,7 +70,7 @@ class PoseData:
     serial_number: str = ""
 
     def update_data(
-        self,
+        self: Self,
         serial_number: str,
         position: list[float],
         rotation: list[float],
@@ -81,7 +82,7 @@ class PoseData:
             self.serial_number = serial_number
             self._has_data = True
 
-    def read_data(self) -> tuple[bool, str, list[float], list[float]]:
+    def read_data(self: Self) -> tuple[bool, str, list[float], list[float]]:
         """Read pose data."""
         with self._lock:
             return self._has_data, self.serial_number, self.position, self.rotation
@@ -172,7 +173,7 @@ def send_data_through_dora(
                     )
                     node.send_output("imu", imu_batch)
                 if has_pose:
-                    print(f"pos:{pos}")
+                    # print(f"pos:{pos}")
                     pose_batch = pa.record_batch(
                         {
                             "serial_number": [sn_pose],
@@ -183,7 +184,7 @@ def send_data_through_dora(
                     )
                     node.send_output("pose", pose_batch)
 
-                time.sleep(0.01)
+                time.sleep(0.001)
 
             elif event["type"] == "STOP":
                 dora_stop_event.set()
@@ -195,7 +196,7 @@ def send_data_through_dora(
         dora_stop_event.set()
 
 
-def signal_handler(sig, frame):
+def signal_handler() -> None:
     """处理SIGINT信号（Ctrl+C）"""
     logger.info("Received Ctrl+C. Stopping gracefully...")
     dora_stop_event.set()
@@ -204,7 +205,7 @@ def signal_handler(sig, frame):
 if __name__ == "__main__":
     # 配置日志
     logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
-    
+
     # 创建事件和数据存储
     imu_data = IMUData()
     pose_data = PoseData()
@@ -243,7 +244,7 @@ if __name__ == "__main__":
     logger.info("Waiting for threads to finish...")
     survive_thread.join(timeout=2.0)  # 设置超时时间
     dora_thread.join(timeout=2.0)
-    
+
     # 确认所有资源已释放
     if survive_thread.is_alive():
         logger.warning("Survive thread is still running after timeout.")

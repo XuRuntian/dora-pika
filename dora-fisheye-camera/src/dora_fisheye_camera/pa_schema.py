@@ -1,6 +1,6 @@
 import pyarrow as pa
 
-pa_image = pa.list_(pa.uint8(), 480*640*3) 
+pa_image = pa.list_(pa.uint8(), 480*640*3)
 
 # 定义 image_schema
 pa_image_fields = [
@@ -12,5 +12,3 @@ pa_image_fields = [
   pa.field("encoding", pa.string()),
 ]
 pa_image_schema = pa.schema(pa_image_fields)
-
-

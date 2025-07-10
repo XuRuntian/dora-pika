@@ -3,21 +3,19 @@
 This module provides a Dora node that sends pyrealsense data, include image, depth.
 """
 import logging
-import sys
-import threading
-from dataclasses import dataclass, field
-
 import os
+import threading
 import time
+from dataclasses import dataclass, field
 
 import cv2
 import numpy as np
 import pyarrow as pa
 import pyrealsense2 as rs
 from dora import Node
-
-from pa_schema import pa_image_schema as image_schema
 from pa_schema import pa_depth_schema as depth_schema
+from pa_schema import pa_image_schema as image_schema
+from typing_extensions import Self
 
 logger = logging.getLogger(__name__)
 
@@ -33,12 +31,12 @@ class ImageData:
     timestamp: int = 0
     serial_number: str = ""
     resolution: list[int] = field(default_factory=lambda: [0, 0])
-    focal_length: list[int] = field(default_factory=lambda: [0, 0]) 
+    focal_length: list[int] = field(default_factory=lambda: [0, 0])
 
     def update_data(
-        self,
-        serial_number: str, 
-        frame: np.ndarray, 
+        self: Self,
+        serial_number: str,
+        frame: np.ndarray,
         width: int,
         height: int,
         encoding: str,
@@ -58,8 +56,8 @@ class ImageData:
             self.focal_length = focal_length
             self._has_data = True
 
-    
-    def read_data(self) -> tuple[bool, str, np.ndarray, int, int, str, int, int, list[int], list[int]]:
+
+    def read_data(self: Self) -> tuple[bool, str, np.ndarray, int, int, str, int, int, list[int], list[int]]:
         """读取Image数据"""
         with self._lock:
             return (
@@ -87,7 +85,7 @@ class DepthData:
     serial_number: str = ""
 
     def update_data(
-        self,
+        self: Self,
         serial_number: str,
         frame: np.ndarray,
         width: int,
@@ -103,7 +101,7 @@ class DepthData:
             self.timestamp = timestamp
             self._has_data = True
 
-    def read_data(self) -> tuple[bool, str, np.ndarray, int, int, str, int]:
+    def read_data(self: Self) -> tuple[bool, str, np.ndarray, int, int, str, int]:
         """Read depth data."""
         with self._lock:
             return (
@@ -115,7 +113,7 @@ class DepthData:
                 self.encoding,
                 self.timestamp,
             )
-        
+
 
 def configure_realsense(
     device_serial: str,
@@ -125,29 +123,29 @@ def configure_realsense(
     """Configure and initialize RealSense camera."""
     ctx = rs.context()
     devices = ctx.query_devices()
-    
+
     if devices.size() == 0:
         raise ConnectionError("No realsense camera connected.")
-    
+
     serials = [device.get_info(rs.camera_info.serial_number) for device in devices]
     if device_serial and (device_serial not in serials):
         raise ConnectionError(
             f"Device with serial {device_serial} not found within: {serials}.",
         )
     logger.info(f"Connected RealSense devices: {serials}")
-    
+
     pipeline = rs.pipeline()
     config = rs.config()
-    
+
     if device_serial:
         config.enable_device(device_serial)
-    
+
     config.enable_stream(rs.stream.color, image_width, image_height, rs.format.rgb8, 30)
     config.enable_stream(rs.stream.depth, image_width, image_height, rs.format.z16, 30)
-    
+
     align_to = rs.stream.color
     align = rs.align(align_to)
-    
+
     return pipeline, align, config, ctx
 
 
@@ -167,18 +165,18 @@ def capture_realsense_data(
         pipeline, align, config, ctx = configure_realsense(device_serial, image_width, image_height)
         profile = pipeline.start(config)
         rgb_profile = profile.get_stream(rs.stream.color)
-        depth_profile = profile.get_stream(rs.stream.depth)
+        # depth_profile = profile.get_stream(rs.stream.depth)
         rgb_intr = rgb_profile.as_video_stream_profile().get_intrinsics()
         while not dora_stop_event.is_set():
             frames = pipeline.wait_for_frames()
             aligned_frames = align.process(frames)
-            
+
             aligned_depth_frame = aligned_frames.get_depth_frame()
             color_frame = aligned_frames.get_color_frame()
 
             if not aligned_depth_frame or not color_frame:
                 continue
-            
+
             depth_image = np.asanyarray(aligned_depth_frame.get_data())
             scaled_depth_image = depth_image
             color_frame = np.asanyarray(color_frame.get_data())
@@ -189,7 +187,7 @@ def capture_realsense_data(
                 color_frame = cv2.flip(color_frame, 1)
             elif flip == "BOTH":
                 color_frame = cv2.flip(color_frame, -1)
-            
+
             # Apply encoding if needed
             if encoding == "bgr8":
                 color_frame = cv2.cvtColor(color_frame, cv2.COLOR_RGB2BGR)
@@ -199,7 +197,7 @@ def capture_realsense_data(
                     logger.error("Error encoding image...")
                     continue
 
-            
+
             # Update image data
             resolution = [int(rgb_intr.ppx), int(rgb_intr.ppy)]
             focal_length = [int(rgb_intr.fx), int(rgb_intr.fy)]
@@ -225,7 +223,7 @@ def capture_realsense_data(
                 timestamp,
             )
             time.sleep(0.001)
-            
+
     except Exception as e:
         logger.exception("RealSense error: %s", e)
         realsense_close_event.set()
@@ -247,7 +245,7 @@ def send_data_through_dora(
             if realsense_close_event.is_set():
                 dora_stop_event.set()
                 break
-            
+
             if event["type"] == "INPUT" and event["id"] == "tick":
                 # Read image data
 
@@ -289,27 +287,27 @@ def send_data_through_dora(
                     # cv2.imshow("depth", depth_frame)
                     # cv2.waitKey(1)  # 刷新显示
                     node.send_output("depth", depth_batch)
-                
+
                 time.sleep(0.001)
-            
+
             elif event["type"] == "STOP":
                 dora_stop_event.set()
                 break
     except Exception as e:
         logger.exception("Dora error: %s", e)
-    
+
 
 def main() -> None:
     """Main entry point for the RealSense node."""
     logging.basicConfig(level=logging.INFO)
-    
+
     # Get environment variables
     flip = os.getenv("FLIP", "")
     device_serial = os.getenv("DEVICE_SERIAL", "")
     image_height = int(os.getenv("IMAGE_HEIGHT", "480"))
     image_width = int(os.getenv("IMAGE_WIDTH", "640"))
     encoding = os.getenv("ENCODING", "rgb8")
-    
+
     # Initialize data classes
     image_data = ImageData()
     depth_data = DepthData()
@@ -318,19 +316,38 @@ def main() -> None:
     # Start threads
     realsense_thread = threading.Thread(
         target=capture_realsense_data,
-        args=(image_data, depth_data, dora_stop_event, realsense_close_event, 
+        args=(image_data, depth_data, dora_stop_event, realsense_close_event,
             device_serial, image_width, image_height, flip, encoding),
+            daemon=True,
+
     )
     dora_thread = threading.Thread(
         target=send_data_through_dora,
         args=(image_data, depth_data, dora_stop_event, realsense_close_event),
+        daemon=True,
     )
-    
+
     realsense_thread.start()
     dora_thread.start()
-    
-    realsense_thread.join()
-    dora_thread.join()
+
+    # 主线程等待
+    try:
+        while not dora_stop_event.is_set():
+            time.sleep(0.1)
+    except KeyboardInterrupt:
+        # 备用处理（虽然信号处理已注册）
+        logger.info("KeyboardInterrupt received. Exiting...")
+        dora_stop_event.set()
+    # 等待线程结束
+    logger.info("Waiting for threads to finish...")
+    realsense_thread.join(timeout=2.0)  # 设置超时时间
+    dora_thread.join(timeout=2.0)
+
+    # 确认所有资源已释放
+    if realsense_thread.is_alive():
+        logger.warning("fisheye thread is still running after timeout.")
+    if dora_thread.is_alive():
+        logger.warning("Dora thread is still running after timeout.")
 
 if __name__ == "__main__":
     main()

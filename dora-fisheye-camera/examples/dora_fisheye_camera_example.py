@@ -2,12 +2,10 @@
 
 import logging
 
-from dora import Node
-import sys
-import pprint
 import cv2
 import numpy as np
-import time 
+from dora import Node
+
 logger = logging.getLogger(__name__)
 
 
@@ -20,13 +18,13 @@ def main() -> None:
     for event in node:
 
       if event["type"] == "INPUT":
+        struct = event["value"][0]
 
         if start_time is None:
            start_time = struct["timestamp"].as_py()
         timestamp = struct["timestamp"].as_py()
         elapsed = (timestamp - start_time) / 1000000000
 
-        struct = event["value"][0]
 
         if event["id"]  == "image_left":
           frame_count_left += 1
@@ -45,7 +43,7 @@ def main() -> None:
           frame = np.array(image.values).reshape(480, 640, 3).astype(np.uint8)
           cv2.imshow("right", frame)
           cv2.waitKey(1)  # 刷新显示
-          
+
 
       elif event["type"] == "STOP":
         break

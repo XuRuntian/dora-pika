@@ -2,7 +2,7 @@
 import cv2
 
 
-def main():
+def main() -> None:
     for i in range(50):
         cap = cv2.VideoCapture(i)
         if cap.isOpened():

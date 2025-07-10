@@ -1,0 +1,18 @@
+nodes:
+- id: dora-pyaudio
+  build: pip install -e .
+  path: src/dora_pyaudio/main.py
+  inputs:
+    tick: dora/timer/millis/33
+  env:
+    CHANNELS: 1
+    RATE: 44100
+    CHUNK: 1024
+  outputs:
+    - audio_data
+
+- id: dora-pyaudio-examples
+  build: pip install -e .
+  path: examples/dora_pyaudio_example.py
+  inputs:
+    audio_data: dora-pyaudio/audio_data

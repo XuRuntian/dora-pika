@@ -1,0 +1,15 @@
+nodes:
+- id: dora-pika-gripper
+  build: pip install -e .
+  path: src/dora_pika_gripper/main.py
+  inputs:
+    tick: dora/timer/millis/33
+  env:
+    SERIAL_PATH: /dev/ttyUSB81
+  outputs:
+   - encoder_data
+- id: dora-pika-gripper-examples
+  build: pip install -e .
+  path: examples/dora_pika_gripper_example.py
+  inputs:
+    pika_gripper_data: dora-pika-gripper/encoder_data

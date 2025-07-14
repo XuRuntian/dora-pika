@@ -1,0 +1,18 @@
+nodes:
+  - id: xense-sensor
+    build: pip install -e .
+    path: src/dora_xense/main.py
+    inputs:
+      tick: dora/timer/millis/33
+    outputs:
+      - xense_data
+    env:
+      sensor_id: "OG000054"  # 传感器设备ID
+      use_gpu: "true" # 是否启用GPU加速
+      rectify_size: "[700,400]" # 校正图像尺寸
+
+  - id: display
+    build: pip install -e .
+    path: examples/dora_xense_example.py
+    inputs:
+      xense_data: xense-sensor/xense_data
